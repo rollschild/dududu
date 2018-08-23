@@ -1,7 +1,14 @@
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import DetailView, ListView, CreateView, UpdateView
+from django.views.generic import (
+    DetailView,
+    ListView,
+    CreateView,
+    UpdateView,
+    DeleteView)
 from django.forms.utils import ErrorList
 from django import forms
+from django.urls import reverse_lazy
+
 
 from .mixins import FormUserNeededMixin, UserOwnerMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -54,6 +61,12 @@ class TweetUpdateView(LoginRequiredMixin, UserOwnerMixin, UpdateView):
     template_name = "tweets/update_view.html"
     success_url = "/tweet/"
     login_url = "/admin/"
+
+
+class TweetDeleteView(LoginRequiredMixin, DeleteView):
+    model = Tweet
+    success_url = reverse_lazy("index")
+    template_name = 'tweets/delete_confirm.html'
 
 
 # List and retrieve
