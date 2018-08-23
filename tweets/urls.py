@@ -9,6 +9,8 @@ from .views import (
     TweetDeleteView,
 )
 
+app_name = 'tweets'
+
 urlpatterns = [
     path('', TweetListView.as_view(), name="list"),
     path('<int:pk>/', TweetDetailView.as_view(), name="detail"),

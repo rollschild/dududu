@@ -24,7 +24,7 @@ from .views import index
 urlpatterns = [
     path('', index, name="index"),
     path('admin/', admin.site.urls),
-    path('tweet/', include('tweets.urls'))
+    path('tweet/', include('tweets.urls', namespace='tweets'))
 ]
 
 if settings.DEBUG:
