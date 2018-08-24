@@ -1,17 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% include "tweets/search_form.html" %}
-    <br/>
-    {% for obj in object_list %}
-        {{ obj.content }}<br/>
-        {{ obj.user }}<br/>
-        {{ obj.timestamp|timesince }} ago<br/>               
-    {% empty %}
-        {% if request.GET.q %}
-            <p>No tweets found.</p>
-        {% else %}
-            <p>No tweets yet...</p>
-        {% endif %}
-    {% endfor %}
+    {# {% include "tweets/search_form.html" %} #}
+    {#<div class="row">#}
+        {#<div class="col-sm-4 col-xs-12" style="background-color:#666633">#}
+            {#<h2>{{ request.user }}</h2>#}
+        <!--/div-->
+        <div class='row'>
+            {% for object in object_list %}
+                {% if forloop.counter == 1 %}
+                    <div class="col-sm-4 col-xs-12" style="background-color:#666633">                         <h2>{{ request.user }}</h2>               
+                    </div>
+                {% else %}
+                    <div class="col-sm-4 col-xs-12" style="background-color:white">        
+                    </div>
+                {% endif %}
+                <div class="col-sm-8">
+                <div class="media">
+                    <div class="media-left">
+                        <a href="#">
+                            {% if object.image %}
+                                <img class="media-object" src="..." alt="..." />
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        {{ object.content }}<br/>
+                        via {{ object.user }} | {{ object.timestamp|timesince }} ago | <a href="{{ object.get_absolute_url }}">View</a>
+                    </div>
+                </div>
+                <hr/>
+                </div>
+            {% empty %}
+                {% if request.GET.q %}
+                    <p>No tweets found.</p>
+                {% else %}
+                    <p>No tweets yet...</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    <!--/div-->
 {% endblock content %}
