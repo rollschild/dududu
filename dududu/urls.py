@@ -20,9 +20,10 @@ from django.conf.urls.static import static
 from django.conf.urls import include
 
 from .views import index
+from tweets.views import TweetListView
 
 urlpatterns = [
-    path('', index, name="index"),
+    path('', TweetListView.as_view(), name="index"),
     path('admin/', admin.site.urls),
     path('tweet/', include('tweets.urls', namespace='tweets'))
 ]

@@ -3,5 +3,10 @@
 {% block title %}Tweet Something | {{ block.super }}{% endblock title%}
 
 {% block content %}
-    {% include "tweets/form.html" with form=form btn_title="Tweet" %}
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2>Tweet</h2>
+            {% include "tweets/form.html" with form=form btn_title="Tweet" %}
+        </div>
+    </div>
 {% endblock content %}
