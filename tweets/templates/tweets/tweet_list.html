@@ -1,28 +1,58 @@
 {% extends "base.html" %}
 
+{% block script %}
+    <script>
+        $(document).ready(function() {
+            console.log("working!");
+            $.ajax({
+                url: "/api/tweet/",
+                method: "GET",
+                success: function(data) {
+                    // console.log(data);
+                    $.each(data, function(key, value) {
+                        // console.log(key);
+                        // console.log(value); // object
+                        // console.log(value.user);
+                        // console.log(value.content);
+                        var tweetKey = key;
+                        var tweetContent = value.content;
+                        var tweetUser = value.user;
+                        $("#tweet-container").append(
+                            "<div class=\"media\"><div class=\"media-body\">"
+                            + tweetContent + "<br/> via "
+                            + tweetUser.username + " | " 
+                            + "<a href='#'>View</a>"
+                            + "</div></div><hr/>"
+                        );
+                    });
+                },
+                error: function(data) {
+                    console.log("error");
+                    console.log("data");
+                },
+            });
+        });
+    </script>
+{% endblock script %}
+
 {% block content %}
     <div class='row'>
         <div class="col-sm-4 col-xs-12" style="background-color:#666633">
             <h2>{{ request.user }}</h2>
         </div>
-        <!--div-->
+        <div class="col-sm-8">
             {% if not request.GET.q %}
-                <div class="col-sm-8">
+                <div class="">
+                    {#% filter addslashes %#}
                     {% include "tweets/form.html" with form=create_form action_url=create_url btn_title="Tweet" %}
-                    <hr/>
+                    {#% endfilter %#}
                 </div>
+                <hr/>
             {% endif %}
+            <div id="tweet-container">
+            
+            </div>
             {% for object in object_list %}
-                {% if request.GET.q %}
-                    {% if forloop.counter is not 1 %}
-                        <div class="col-sm-4 col-xs-12" style="background-color:#ffffff">
-                        </div> 
-                    {% endif %}
-                {% else %}
-                    <div class="col-sm-4 col-xs-12" style="background-color:#ffffff">
-                    </div>
-                {% endif %}
-                <div class="col-sm-8">
                 <div class="media">
                     <div class="media-left">
                         <a href="#">
@@ -33,11 +63,11 @@
                     </div>
                     <div class="media-body">
                         {{ object.content }}<br/>
-                        via {{ object.user }} | {{ object.timestamp|timesince }} ago | <a href="{{ object.get_absolute_url }}">View</a>
+                        via {{ object.user }} | {{ object.timestamp|timesince }} 
+                        ago | <a href="{{ object.get_absolute_url }}">View</a>
                     </div>
                 </div>
                 <hr/>
-                </div>
             {% empty %}
                 {% if request.GET.q %}
                     <p>No tweets found.</p>
@@ -45,6 +75,6 @@
                     <p>No tweets yet...</p>
                 {% endif %}
             {% endfor %}
-        <!--/div-->
+        </div>
     </div>
 {% endblock content %}
