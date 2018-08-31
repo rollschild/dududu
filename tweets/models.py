@@ -38,3 +38,9 @@ class Tweet(models.Model):
         if content == "fuck" or content == "Fuck" or content == "FUCK":
             raise ValidationError("Cannot be rude!")
         return super(Tweet, self).clean(*args, **kwargs)
+
+    '''
+    class Meta:
+        ordering = ['-timestamp', 'content']
+        # NEED to do a migration if you do this
+    '''

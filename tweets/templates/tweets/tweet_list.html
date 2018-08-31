@@ -26,44 +26,71 @@
 
         $(document).ready(function() {
             var query = getParameterByName('q');
-            console.log(query);
-            console.log("working!");
+            // console.log(query);
+            // console.log("working!");
             var tweetList = [];
 
             function parseTweets() {
                 if (tweetList.length === 0) {
                     $("#tweet-container").text("No tweets found!");
                 } else {
+                    $("#tweet-container").empty();
                     $.each(tweetList, function(key, value) {
                         var tweetKey = key;     
                         var tweetContent = value.content;
                         var tweetUser = value.user;
+                        var dateDisplay = value.date_display;
                         $("#tweet-container").append(
                             "<div class=\"media\"><div class=\"media-body\">"    
                             + tweetContent + "<br/> via "     
-                            + tweetUser.username + " | "      
+                            + tweetUser.username + " | "
+                            + dateDisplay + " | "
                             + "<a href='#'>View</a>"          
                             + "</div></div><hr/>"             
                         );                                    
                     });
                 };
             };
+            
+            function fetchTweets() {
+                console.log("fetching...");
+                $.ajax({
+                    url: "/api/tweet/",
+                    data: {
+                        "q": query,
+                    },
+                    method: "GET",
+                    success: function(data) {
+                        tweetList = data;
+                        parseTweets();
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log("data");
+                    },
+                });
+            }
 
-            $.ajax({
-                url: "/api/tweet/",
-                data: {
-                    "q": query,
-                },
-                method: "GET",
-                success: function(data) {
-                    // console.log(data);
-                    tweetList = data;
-                    parseTweets();
-                },
-                error: function(data) {
-                    console.log("error");
-                    console.log("data");
-                },
+            fetchTweets();
+
+            $('#tweet-form').submit(function (event) {
+                event.preventDefault();
+                var this_ = $(this);
+                var formData = this_.serialize();
+                
+                $.ajax({
+                    url: '/api/tweet/create/',
+                    data: formData,
+                    method: 'POST',
+                    success: function(data) {
+                        fetchTweets();
+                    },
+                    error: function(data) {
+                        console.log('error');
+                        console.log(data.status);
+                        console.log(data.statusText);
+                    },
+                });
             });
         });
     </script>
@@ -77,9 +104,7 @@
         <div class="col-sm-8">
             {% if not request.GET.q %}
                 <div class="">
-                    {#% filter addslashes %#}
-                    {% include "tweets/form.html" with form=create_form action_url=create_url btn_title="Tweet" %}
-                    {#% endfilter %#}
+                    {% include "tweets/form.html" with form=create_form action_url=create_url btn_title="Tweet" form_id='tweet-form'%}
                 </div>
                 <hr/>
             {% endif %}
