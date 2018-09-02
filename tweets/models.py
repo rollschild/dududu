@@ -23,7 +23,7 @@ class Tweet(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE)
 
-    content = models.CharField(max_length=199, validators=[validate_content])
+    content = models.CharField(max_length=140, validators=[validate_content])
     updated = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 

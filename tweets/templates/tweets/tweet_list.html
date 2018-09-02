@@ -62,6 +62,9 @@
                     method: "GET",
                     success: function(data) {
                         tweetList = data;
+                        // $("#tweet-form").find("input[type=text], textarea").val("");
+                        $("#tweet-form")[0].reset();
+                        $("#tweetCharsLeft").text(charsStart);
                         parseTweets();
                     },
                     error: function(data) {
@@ -72,25 +75,52 @@
             }
 
             fetchTweets();
+            var charsStart = 140;
+            var charsCurrent = 0;
+            $("#tweet-form").append("<span id='tweetCharsLeft'>" + charsStart + "</span>");
+            $("#tweet-form textarea").keyup(function(event) {
+                // this can monitor the typying in real-time
+                // console.log(event.key, event.timeStamp);
+                var tweetValue = $(this).val();
+                charsCurrent = charsStart - tweetValue.length;
+                var spanChars = $("#tweetCharsLeft");
+                spanChars.text(charsCurrent);
+                if (charsCurrent > 0) {
+                    spanChars.removeClass("red-color");
+                    spanChars.removeClass("grey-color");
+                } else if (charsCurrent == 0) {
+                    spanChars.removeClass("red-color");
+                    spanChars.addClass("grey-color");
+                } else {
+                    spanChars.removeClass("grey-color");
+                    spanChars.addClass("red-color");
+                };
+            });
 
             $('#tweet-form').submit(function (event) {
                 event.preventDefault();
                 var this_ = $(this);
                 var formData = this_.serialize();
-                
-                $.ajax({
-                    url: '/api/tweet/create/',
-                    data: formData,
-                    method: 'POST',
-                    success: function(data) {
-                        fetchTweets();
-                    },
-                    error: function(data) {
-                        console.log('error');
-                        console.log(data.status);
-                        console.log(data.statusText);
-                    },
-                });
+                if (charsCurrent >= 0) { 
+                    $.ajax({
+                        url: '/api/tweet/create/',
+                        data: formData,
+                        method: 'POST',
+                        success: function(data) {
+                            // this_.find("input[type=text], textarea").val("");
+                            this_[0].reset();
+                            // $("#tweetCharsLeft").text(charsStart);
+                            fetchTweets();
+                        },
+                        error: function(data) {
+                            console.log('error');
+                            console.log(data.status);
+                            console.log(data.statusText);
+                        },
+                    });
+                } else {
+                    console.log("Tweet is longer than 140 characters!");
+                }
             });
         });
     </script>
@@ -104,7 +134,7 @@
         <div class="col-sm-8">
             {% if not request.GET.q %}
                 <div class="">
-                    {% include "tweets/form.html" with form=create_form action_url=create_url btn_title="Tweet" form_id='tweet-form'%}
+                    {% include "tweets/form.html" with form=create_form action_url=create_url btn_title="Tweet" form_id='tweet-form' %}
                 </div>
                 <hr/>
             {% endif %}
