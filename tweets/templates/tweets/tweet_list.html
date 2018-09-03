@@ -63,7 +63,9 @@
                     success: function(data) {
                         tweetList = data;
                         // $("#tweet-form").find("input[type=text], textarea").val("");
-                        $("#tweet-form")[0].reset();
+                        if ($("#tweet-form").val()) {
+                            $("#tweet-form")[0].reset();
+                        }
                         $("#tweetCharsLeft").text(charsStart);
                         parseTweets();
                     },
