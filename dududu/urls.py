@@ -25,9 +25,10 @@ from tweets.views import TweetListView
 urlpatterns = [
     path('', TweetListView.as_view(), name="index"),
     path('admin/', admin.site.urls),
-    path('profiles/', include('accounts.urls', namespace='profiles')),
+    # path('profiles/', include('accounts.urls', namespace='profiles')),
     path('tweet/', include('tweets.urls', namespace='tweets')),
     path('api/tweet/', include('tweets.api.urls', namespace='tweets-api')),
+    path('', include('accounts.urls', namespace='profiles')),
 ]
 
 if settings.DEBUG:
