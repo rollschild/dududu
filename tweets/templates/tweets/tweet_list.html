@@ -29,44 +29,64 @@
             // console.log(query);
             // console.log("working!");
             var tweetList = [];
+            let nextTweetUrl;
+            
+            function attachTweet(tweetValue, prepend) {
+                let dateDisplay = tweetValue.date_display;
+                let tweetContent = tweetValue.content;
+                let tweetUser = tweetValue.user;
+                let tweetFormattedHtml = 
+                    "<div class=\"media\"><div class=\"media-body\">" 
+                    + tweetContent + "<br/> via " 
+                    + tweetUser.username + " | " 
+                    + dateDisplay + " | " 
+                    + "<a href='#'>View</a>" 
+                    + "</div></div><hr/>";
+                if (prepend === true) {
+                    $("#tweet-container").prepend(tweetFormattedHtml);
+                } else {
+                    $("#tweet-container").append(tweetFormattedHtml);
+                };
+            };
 
             function parseTweets() {
                 if (tweetList.length === 0) {
                     $("#tweet-container").text("No tweets found!");
                 } else {
-                    $("#tweet-container").empty();
+                    // $("#tweet-container").empty();
                     $.each(tweetList, function(key, value) {
-                        var tweetKey = key;     
-                        var tweetContent = value.content;
-                        var tweetUser = value.user;
-                        var dateDisplay = value.date_display;
-                        $("#tweet-container").append(
-                            "<div class=\"media\"><div class=\"media-body\">"    
-                            + tweetContent + "<br/> via "     
-                            + tweetUser.username + " | "
-                            + dateDisplay + " | "
-                            + "<a href='#'>View</a>"          
-                            + "</div></div><hr/>"             
-                        );                                    
+                        let tweetKey = key;
+                        attachTweet(value);
                     });
                 };
             };
             
-            function fetchTweets() {
+            function fetchTweets(url) {
                 console.log("fetching...");
+                let fetchUrl;
+                if (!url) {
+                    fetchUrl = "/api/tweet/";
+                } else {
+                    fetchUrl = url;
+                }
                 $.ajax({
-                    url: "/api/tweet/",
+                    url: fetchUrl,
                     data: {
                         "q": query,
                     },
                     method: "GET",
                     success: function(data) {
-                        tweetList = data;
+                        tweetList = data.results;
+                        if (data.next) {
+                            nextTweetUrl = data.next;
+                        } else {
+                            $("#loadmore").css("display", "none");
+                        }
                         // $("#tweet-form").find("input[type=text], textarea").val("");
                         if ($("#tweet-form").val()) {
                             $("#tweet-form")[0].reset();
                         }
-                        $("#tweetCharsLeft").text(charsStart);
+                        // $("#tweetCharsLeft").text(charsStart);
                         parseTweets();
                     },
                     error: function(data) {
@@ -77,6 +97,14 @@
             }
 
             fetchTweets();
+
+            $("#loadmore").click(function(event) {
+                event.preventDefault();
+                if (nextTweetUrl) {
+                    fetchTweets(nextTweetUrl);
+                }
+            })
+
             var charsStart = 140;
             var charsCurrent = 0;
             $("#tweet-form").append("<span id='tweetCharsLeft'>" + charsStart + "</span>");
@@ -111,8 +139,8 @@
                         success: function(data) {
                             // this_.find("input[type=text], textarea").val("");
                             this_[0].reset();
-                            // $("#tweetCharsLeft").text(charsStart);
-                            fetchTweets();
+                            $("#tweetCharsLeft").text(charsStart);
+                            attachTweet(data, true);
                         },
                         error: function(data) {
                             console.log('error');
@@ -143,6 +171,7 @@
             <div id="tweet-container">
             
             </div>
+            <a href="#" id="loadmore">Load More Tweets...</a>
         </div>
     </div>
 {% endblock content %}
