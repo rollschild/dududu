@@ -39,8 +39,6 @@ class Tweet(models.Model):
             raise ValidationError("Cannot be rude!")
         return super(Tweet, self).clean(*args, **kwargs)
 
-    '''
     class Meta:
         ordering = ['-timestamp', 'content']
         # NEED to do a migration if you do this
-    '''
