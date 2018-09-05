@@ -5,6 +5,11 @@
         <div class='col-sm-3 col-xs-12' style='background-color:red'>
             <h1>{{ object.username }}</h1>
             <p>Followers: {{ object.followed_by.all.count }}</p>
+            <p>
+            <a button="btn btn-link" href="{{ object.profile.get_follow_url }}">
+                {% if following %}Unfollow{% else %}Follow{% endif %}
+            </a>
+            </p>
         </div>
         <div class='col-sm-9 col-xs-12'>
             <h1>Tweets...</h1>
