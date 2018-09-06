@@ -30,7 +30,15 @@
             // console.log("working!");
             var tweetList = [];
             let nextTweetUrl;
-            
+           
+            function updateHashLinks() {
+                $(".media-body").each(function(data) {
+                    let hashtagRegex = /(^|\s)#([\w\d-]+)/g
+                    let newText = $(this).html().replace(hashtagRegex, "$1<a href='/tags/$2/'>#$2</a>")
+                    $(this).html(newText)
+                })
+            }
+
             function attachTweet(tweetValue, prepend) {
                 let dateDisplay = tweetValue.date_display;
                 let tweetContent = tweetValue.content;
@@ -91,6 +99,7 @@
                         }
                         // $("#tweetCharsLeft").text(charsStart);
                         parseTweets();
+                        updateHashLinks();
                     },
                     error: function(data) {
                         console.log("error");
@@ -144,6 +153,7 @@
                             this_[0].reset();
                             $("#tweetCharsLeft").text(charsStart);
                             attachTweet(data, true);
+                            updateHashLinks();
                         },
                         error: function(data) {
                             console.log('error');

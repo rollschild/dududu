@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-sm-4 col-xs-12">
+            <h3>{{ obj.tag }}</h3>
+        </div>
+        <div class="col-sm-8">
+            {% for tweet in obj.get_tweets %}
+            {{ tweet.content }}
+            <br/>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock content %}
