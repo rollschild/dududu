@@ -39,20 +39,47 @@
                 })
             }
 
-            function attachTweet(tweetValue, prepend) {
+            function attachTweet(tweetValue, prepend, retweet) {
                 let dateDisplay = tweetValue.date_display;
                 let tweetContent = tweetValue.content;
                 let tweetUser = tweetValue.user;
-                let tweetFormattedHtml = 
-                    "<div class=\"media\"><div class=\"media-body\">" 
-                    + tweetContent + "<br/> via "
-                    + "<a href='"
-                    + tweetUser.url
-                    + "'>"
-                    + tweetUser.username + "</a> | " 
-                    + dateDisplay + " | " 
-                    + "<a href='#'>View</a>" 
-                    + "</div></div><hr/>";
+                let tweetFormattedHtml;
+                if (retweet && tweetValue.parent) {
+                    // Retweet
+                    let originalTweet = tweetValue.parent;
+                    tweetFormattedHtml = 
+                        "<div class=\"media\"><div class=\"media-body\">"
+                        + "<span class='grey-color'>"
+                        + "Retweeted via "
+                        + "<span class='dark-blue-color'>"
+                        + tweetUser.username
+                        + "</span>"
+                        + " on " + dateDisplay + "</span><br/>"
+                        + originalTweet.content + "<br/>"
+                        + " via <a href='"
+                        + originalTweet.user.url
+                        + "'>" + originalTweet.user.username + "</a> | "
+                        + originalTweet.date_display + " | "
+                        + "<a href='/tweet/" 
+                        + originalTweet.id + "'>View</a> | "
+                        + "<a href='/tweet/" + tweetValue.id
+                        + "/retweet/'>Retweet</a>"
+                        + "</div></div><hr/>";
+                } else {
+                    // Fresh new tweet
+                    tweetFormattedHtml = 
+                        "<div class=\"media\"><div class=\"media-body\">" 
+                        + tweetContent + "<br/> via "
+                        + "<a href='"
+                        + tweetUser.url
+                        + "'>"
+                        + tweetUser.username + "</a> | " 
+                        + dateDisplay + " | " 
+                        + "<a href='/tweet/" + tweetValue.id + "'>View</a> | "
+                        + "<a href='/tweet/" + tweetValue.id
+                        + "/retweet/'>Retweet</a>"
+                        + "</div></div><hr/>";
+                }
                 if (prepend === true) {
                     $("#tweet-container").prepend(tweetFormattedHtml);
                 } else {
@@ -67,7 +94,10 @@
                     // $("#tweet-container").empty();
                     $.each(tweetList, function(key, value) {
                         let tweetKey = key;
-                        attachTweet(value);
+                        if (value.parent)
+                            attachTweet(value, false, true);
+                        else
+                            attachTweet(value);
                     });
                 };
             };

@@ -8,6 +8,7 @@ from .views import (
     TweetCreateView,
     TweetUpdateView,
     TweetDeleteView,
+    RetweetView,
 )
 
 app_name = 'tweets'
@@ -19,5 +20,6 @@ urlpatterns = [
     path('create/', TweetCreateView.as_view(), name='create'),
     path('<int:pk>/update/', TweetUpdateView.as_view(), name='update'),
     path('<int:pk>/delete/', TweetDeleteView.as_view(), name='delete'),
+    path('<int:pk>/retweet/', RetweetView.as_view(), name='retweet'),
     # path('admin/', admin.site.urls),
 ]
