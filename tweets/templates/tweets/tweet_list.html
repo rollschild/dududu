@@ -31,6 +31,24 @@
             var tweetList = [];
             let nextTweetUrl;
            
+            $(document.body).on("click", ".retweetButton", function(e) {
+                e.preventDefault();
+                let url = "/api" + $(this).attr("href")
+                $.ajax({
+                    method: "GET",
+                    url: url,
+                    success: function(data) {
+                        console.log(data);
+                        attachTweet(data, true, true);
+                        updateHashLinks();
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log(data);
+                    }
+                })
+            })
+
             function updateHashLinks() {
                 $(".media-body").each(function(data) {
                     let hashtagRegex = /(^|\s)#([\w\d-]+)/g
@@ -62,7 +80,7 @@
                         + originalTweet.date_display + " | "
                         + "<a href='/tweet/" 
                         + originalTweet.id + "'>View</a> | "
-                        + "<a href='/tweet/" + tweetValue.id
+                        + "<a class='retweetButton' href='/tweet/" + tweetValue.id
                         + "/retweet/'>Retweet</a>"
                         + "</div></div><hr/>";
                 } else {
@@ -76,7 +94,7 @@
                         + tweetUser.username + "</a> | " 
                         + dateDisplay + " | " 
                         + "<a href='/tweet/" + tweetValue.id + "'>View</a> | "
-                        + "<a href='/tweet/" + tweetValue.id
+                        + "<a class='retweetButton' href='/tweet/" + tweetValue.id
                         + "/retweet/'>Retweet</a>"
                         + "</div></div><hr/>";
                 }
