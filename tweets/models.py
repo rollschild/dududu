@@ -1,10 +1,14 @@
+import re
+from django.db.models.signals import post_save
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.urls import reverse
 
 from .validators import validate_content
+from hashtags.signals import parsed_hashtags
 # Create your models here.
+
 
 # We can also write our own validation function
 
@@ -72,3 +76,21 @@ class Tweet(models.Model):
     class Meta:
         ordering = ['-timestamp', 'content']
         # NEED to do a migration if you do this
+
+
+def tweet_save_receiver(sender, instance, created, *args, **kwargs):
+    if created and not instance.parent:
+        # Notify the user
+        user_regex = r'@(?P<username>[\w.@+-]+)'
+        usernames = re.findall(user_regex, instance.content)
+        # username = m.group("username")
+        # print(username)
+        # Send notification now!
+        hash_regex = r'#(?P<hashtag>[\w\d-]+)'
+        hashtags = re.findall(hash_regex, instance.content)
+        parsed_hashtags.send(sender=instance.__class__, hashtag_list=hashtags)
+        # hashtag = m.group("hashtag")
+        # print(hashtag)
+
+
+post_save.connect(tweet_save_receiver, sender=Tweet)

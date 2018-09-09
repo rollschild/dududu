@@ -51,9 +51,13 @@
 
             function updateHashLinks() {
                 $(".media-body").each(function(data) {
-                    let hashtagRegex = /(^|\s)#([\w\d-]+)/g
-                    let newText = $(this).html().replace(hashtagRegex, "$1<a href='/tags/$2/'>#$2</a>")
-                    $(this).html(newText)
+                    let hashtagRegex = /(^|\s)#([\w\d-]+)/g;
+                    let usernameRegex = /(^|\s)@([\w\d-]+)/g;
+                    let newText;
+                    // let currentHtml = $(this).html();
+                    newText = $(this).html().replace(hashtagRegex, "$1<a href='/tags/$2/'>#$2</a>");
+                    newText = newText.replace(usernameRegex, "$1@<a href='/$2/'>$2</a>");
+                    $(this).html(newText);
                 })
             }
 
@@ -73,6 +77,7 @@
                         + tweetUser.username
                         + "</span>"
                         + " on " + dateDisplay + "</span><br/>"
+                        + " "
                         + originalTweet.content + "<br/>"
                         + " via <a href='"
                         + originalTweet.user.url
@@ -142,9 +147,12 @@
                             $("#loadmore").css("display", "none");
                         }
                         // $("#tweet-form").find("input[type=text], textarea").val("");
+                        $("#tweet-form")[0].reset();
+                        /*
                         if ($("#tweet-form").val()) {
                             $("#tweet-form")[0].reset();
                         }
+                        */
                         // $("#tweetCharsLeft").text(charsStart);
                         parseTweets();
                         updateHashLinks();
