@@ -30,6 +30,7 @@ urlpatterns = [
     # path('profiles/', include('accounts.urls', namespace='profiles')),
     path('tweet/', include('tweets.urls', namespace='tweets')),
     path('api/tweet/', include('tweets.api.urls', namespace='tweets-api')),
+    path('api/', include('accounts.api.urls', namespace='profiles-api')),
     path('', include('accounts.urls', namespace='profiles')),
 ]
 

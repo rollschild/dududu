@@ -9,7 +9,7 @@
 {% block script %}
     <script>
         $(document).ready(function() {
-            loadTweetContainer("tweet-container");
+            loadTweetContainer();
         });
     </script>
 {% endblock script %}
@@ -26,7 +26,7 @@
                 </div>
                 <hr/>
             {% endif %}
-            <div id="tweet-container" data-url="/api/tweet/">
+            <div id="tweet-container">
             
             </div>
             <a href="#" id="loadmore">Load More Tweets...</a>

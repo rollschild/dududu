@@ -35,6 +35,234 @@
     <!--<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>-->
 
     <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+    
+    <script>
+    
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+            var results = regex.exec(url);
+            if(!results) {
+                return null;
+            }
+            if(!results[2]) {
+                return '';
+            }
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        };
+        
+        function loadTweetContainer(tweetContainerId) { 
+            var query = getParameterByName('q');
+            // console.log(query);
+            // console.log("working!");
+            var tweetList = [];
+            let nextTweetUrl;
+            // let initialUrl = "/api/tweet/";
+            if (tweetContainerId) {
+                initialContainer = $("#" + tweetContainerId);
+            } else {
+                initialContainer = $("#tweet-container");
+            }
+            
+            let initialUrl = initialContainer.attr("data-url") || "/api/tweet/";
+
+            $(document.body).on("click", ".retweetButton", function(e) {
+                e.preventDefault();
+                let url = "/api" + $(this).attr("href")
+                $.ajax({
+                    method: "GET",
+                    url: url,
+                    success: function(data) {
+                        if (initialUrl === "/api/tweet/") {
+                            attachTweet(data, true, true);
+                            updateHashLinks();
+                        }
+                    },
+                    error: function(data) {
+                        console.log("error retweeting...");
+                        console.log(data);
+                    }
+                })
+            })
+
+            function updateHashLinks() {
+                $(".media-body").each(function(data) {
+                    let hashtagRegex = /(^|\s)#([\w\d-]+)/g;
+                    let usernameRegex = /(^|\s)@([\w\d-]+)/g;
+                    let newText;
+                    // let currentHtml = $(this).html();
+                    newText = $(this).html().replace(hashtagRegex, "$1<a href='/tags/$2/'>#$2</a>");
+                    newText = newText.replace(usernameRegex, "$1@<a href='/$2/'>$2</a>");
+                    $(this).html(newText);
+                })
+            }
+
+            function attachTweet(tweetValue, prepend, retweet) {
+                let dateDisplay = tweetValue.date_display;
+                let tweetContent = tweetValue.content;
+                let tweetUser = tweetValue.user;
+                let tweetFormattedHtml;
+                if (retweet && tweetValue.parent) {
+                    // Retweet
+                    let originalTweet = tweetValue.parent;
+                    tweetFormattedHtml = 
+                        "<div class=\"media\"><div class=\"media-body\">"
+                        + "<span class='grey-color'>"
+                        + "Retweeted via "
+                        + "<span class='dark-blue-color'>"
+                        + tweetUser.username
+                        + "</span>"
+                        + " on " + dateDisplay + "</span><br/>"
+                        + " "
+                        + originalTweet.content + "<br/>"
+                        + " via <a href='"
+                        + originalTweet.user.url
+                        + "'>" + originalTweet.user.username + "</a> | "
+                        + originalTweet.date_display + " | "
+                        + "<a href='/tweet/" 
+                        + originalTweet.id + "'>View</a> | "
+                        + "<a class='retweetButton' href='/tweet/" + tweetValue.id
+                        + "/retweet/'>Retweet</a>"
+                        + "</div></div><hr/>";
+                } else {
+                    // Fresh new tweet
+                    tweetFormattedHtml = 
+                        "<div class=\"media\"><div class=\"media-body\">" 
+                        + tweetContent + "<br/> via "
+                        + "<a href='"
+                        + tweetUser.url
+                        + "'>"
+                        + tweetUser.username + "</a> | " 
+                        + dateDisplay + " | " 
+                        + "<a href='/tweet/" + tweetValue.id + "'>View</a> | "
+                        + "<a class='retweetButton' href='/tweet/" + tweetValue.id
+                        + "/retweet/'>Retweet</a>"
+                        + "</div></div><hr/>";
+                }
+                if (prepend === true) {
+                    initialContainer.prepend(tweetFormattedHtml);
+                } else {
+                    initialContainer.append(tweetFormattedHtml);
+                };
+            };
+
+            function parseTweets() {
+                if (tweetList.length === 0) {
+                    initialContainer.text("No tweets found!");
+                } else {
+                    // $("#tweet-container").empty();
+                    $.each(tweetList, function(key, value) {
+                        let tweetKey = key;
+                        if (value.parent)
+                            attachTweet(value, false, true);
+                        else
+                            attachTweet(value);
+                    });
+                };
+            };
+            
+            function fetchTweets(url) {
+                console.log("fetching...");
+                let fetchUrl;
+                if (!url) {
+                    fetchUrl = initialUrl;
+                } else {
+                    fetchUrl = url;
+                }
+                $.ajax({
+                    url: fetchUrl,
+                    data: {
+                        "q": query,
+                    },
+                    method: "GET",
+                    success: function(data) {
+                        tweetList = data.results;
+                        if (data.next) {
+                            nextTweetUrl = data.next;
+                        } else {
+                            $("#loadmore").css("display", "none");
+                        }
+                        // $("#tweet-form").find("input[type=text], textarea").val("");
+                        // $("#tweet-form")[0].reset();
+                        
+                        if ($("#tweet-form").val()) {
+                            $("#tweet-form")[0].reset();
+                        }
+                        
+                        // $("#tweetCharsLeft").text(charsStart);
+                        parseTweets();
+                        updateHashLinks();
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log("data");
+                    },
+                });
+            }
+
+            fetchTweets();
+
+            $("#loadmore").click(function(event) {
+                event.preventDefault();
+                if (nextTweetUrl) {
+                    fetchTweets(nextTweetUrl);
+                }
+            })
+
+            var charsStart = 140;
+            var charsCurrent = 0;
+            $("#tweet-form").append("<span id='tweetCharsLeft'>" + charsStart + "</span>");
+            $("#tweet-form textarea").keyup(function(event) {
+                // this can monitor the typying in real-time
+                // console.log(event.key, event.timeStamp);
+                var tweetValue = $(this).val();
+                charsCurrent = charsStart - tweetValue.length;
+                var spanChars = $("#tweetCharsLeft");
+                spanChars.text(charsCurrent);
+                if (charsCurrent > 0) {
+                    spanChars.removeClass("red-color");
+                    spanChars.removeClass("grey-color");
+                } else if (charsCurrent == 0) {
+                    spanChars.removeClass("red-color");
+                    spanChars.addClass("grey-color");
+                } else {
+                    spanChars.removeClass("grey-color");
+                    spanChars.addClass("red-color");
+                };
+            });
+
+            $('#tweet-form').submit(function (event) {
+                event.preventDefault();
+                var this_ = $(this);
+                var formData = this_.serialize();
+                if (charsCurrent >= 0) { 
+                    $.ajax({
+                        url: '/api/tweet/create/',
+                        data: formData,
+                        method: 'POST',
+                        success: function(data) {
+                            // this_.find("input[type=text], textarea").val("");
+                            this_[0].reset();
+                            $("#tweetCharsLeft").text(charsStart);
+                            attachTweet(data, true);
+                            updateHashLinks();
+                        },
+                        error: function(data) {
+                            console.log('error');
+                            console.log(data.status);
+                            console.log(data.statusText);
+                        },
+                    });
+                } else {
+                    console.log("Tweet is longer than 140 characters!");
+                }
+            });
+        };
+
+    </script>
 
     {% block script %}{% endblock script %}
 
