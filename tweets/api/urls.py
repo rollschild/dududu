@@ -4,6 +4,7 @@ from .views import (
     TweetListAPIView,
     TweetCreateAPIView,
     RetweetAPIView,
+    LikeToggleAPIView,
 )
 
 app_name = 'tweets-api'
@@ -15,6 +16,7 @@ urlpatterns = [
         '<int:pk>/retweet/',
         RetweetAPIView.as_view(),
         name='retweet'),
+    path('<int:pk>/like/', LikeToggleAPIView.as_view(), name='like-toggle'),
     # /api/tweet/id/retweet/
     # path('admin/', admin.site.urls),
 ]

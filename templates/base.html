@@ -69,9 +69,35 @@
             
             let initialUrl = initialContainer.attr("data-url") || "/api/tweet/";
 
+            $(document.body).on("click", ".tweet-like", function(e) {
+                e.preventDefault();
+                let this_ = $(this);
+                let tweetId = this_.attr("data-id");
+                let likedUrl = "/api/tweet/" + tweetId + "/like/";
+
+                // this_.text = "Liked";
+                // console.log(this_.text);
+                $.ajax({
+                    method: "GET",
+                    url: likedUrl,
+                    success: function(data) {
+                        if (data.liked) {
+                            this_.text("Liked");
+                        } else {
+                            this_.text("Unliked");
+                        }
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log(data);
+                    }
+                })
+            })
+
+
             $(document.body).on("click", ".retweetButton", function(e) {
                 e.preventDefault();
-                let url = "/api" + $(this).attr("href")
+                let url = "/api" + $(this).attr("href");
                 $.ajax({
                     method: "GET",
                     url: url,
@@ -105,6 +131,10 @@
                 let tweetContent = tweetValue.content;
                 let tweetUser = tweetValue.user;
                 let tweetFormattedHtml;
+                let verb = "Like";
+                if (tweetValue.did_like) {
+                    verb = "Unlike";
+                }
                 if (retweet && tweetValue.parent) {
                     // Retweet
                     let originalTweet = tweetValue.parent;
@@ -126,6 +156,9 @@
                         + originalTweet.id + "'>View</a> | "
                         + "<a class='retweetButton' href='/tweet/" + tweetValue.id
                         + "/retweet/'>Retweet</a>"
+                        + " | <a href='#' class='tweet-like' data-id='"
+                        + tweetValue.id 
+                        + "'>" + verb + " (" + tweetValue.likes + ")</a>"
                         + "</div></div><hr/>";
                 } else {
                     // Fresh new tweet
@@ -140,6 +173,9 @@
                         + "<a href='/tweet/" + tweetValue.id + "'>View</a> | "
                         + "<a class='retweetButton' href='/tweet/" + tweetValue.id
                         + "/retweet/'>Retweet</a>"
+                        + " | <a href='#' class='tweet-like' data-id='"
+                        + tweetValue.id
+                        + "'>"+ verb + " (" + tweetValue.likes + ")</a>"
                         + "</div></div><hr/>";
                 }
                 if (prepend === true) {
