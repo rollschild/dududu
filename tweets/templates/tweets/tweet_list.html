@@ -1,35 +1,36 @@
 {% extends "base.html" %}
 
 <style>
-    #tweet-user {
-        height: 50px;
-    }
+  #tweet-user {
+    height: 50px;
+  }
 </style>
 
 {% block script %}
-    <script>
-        $(document).ready(function() {
-            loadTweetContainer("tweet-container");
-        });
-    </script>
-{% endblock script %}
-
-{% block content %}
-    <div class='row'>
-        <div class="col-sm-4 col-xs-12" style="background-color:#FFFFFF" id="tweet-user">
-            <h2>{{ request.user }}</h2>
-        </div>
-        <div class="col-sm-8">
-            {% if not request.GET.q %}
-                <div class="">
-                    {% include "tweets/form.html" with form=create_form action_url=create_url btn_title="Tweet" form_class='tweet-form' %}
-                </div>
-                <hr/>
-            {% endif %}
-            <div id="tweet-container" data-url="/api/tweet/">
-            
-            </div>
-            <a href="#" id="loadmore">Load More Tweets...</a>
-        </div>
+<script>
+  $(document).ready(function() {
+    loadTweetContainer('tweet-container');
+  });
+</script>
+{% endblock script %} {% block content %}
+<div class="row">
+  <div
+    class="col-sm-4 col-xs-12"
+    style="background-color:#FFFFFF"
+    id="tweet-user"
+  >
+    <h2>{{ request.user }}</h2>
+  </div>
+  <div class="col-sm-8">
+    {% if not request.GET.q %}
+    <div class="">
+      {% include "tweets/form.html" with form=create_form action_url=create_url
+      btn_title="Tweet" form_class='tweet-form' %}
     </div>
+    <hr />
+    {% endif %}
+    <div id="tweet-container" data-url="/api/tweet/"></div>
+    <a href="#" id="loadmore">Load More Tweets...</a>
+  </div>
+</div>
 {% endblock content %}
