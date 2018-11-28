@@ -71,6 +71,7 @@ class Tweet(models.Model):
         related_name="liked")
     updated = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    reply = models.BooleanField(verbose_name="Is a reply?", default=False)
 
     objects = TweetManager()
 

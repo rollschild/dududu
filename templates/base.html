@@ -30,6 +30,7 @@
       {% block content %}
       {% endblock content %}
     </div>
+      {% include "reply-modal.html" %}
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <!--<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>-->
@@ -95,6 +96,19 @@
             })
 
 
+            $(document.body).on("click", ".tweet-reply", function(e) {
+                e.preventDefault();
+                let this_ = $(this);
+                let parentId = this_.attr("data-id");
+                let username = this_.attr("data-user");
+                $("#replyModal").modal({});
+                $("#replyModal textarea").val("@" + username + " ");
+                $("#replyModal").on("shown.bs.modal", function() {
+                    $("textarea").focus();
+                })
+
+            })
+
             $(document.body).on("click", ".retweetButton", function(e) {
                 e.preventDefault();
                 let url = "/api" + $(this).attr("href");
@@ -126,58 +140,65 @@
                 })
             }
 
-            function attachTweet(tweetValue, prepend, retweet) {
-                let dateDisplay = tweetValue.date_display;
-                let tweetContent = tweetValue.content;
-                let tweetUser = tweetValue.user;
-                let tweetFormattedHtml;
+            function formatTweet(tweetValue) {
+                let container = "";
                 let verb = "Like";
-                if (tweetValue.did_like) {
+                let tweetContent = "";
+                if (tweetValue.parent && tweetValue.parent.did_like) {
                     verb = "Unlike";
-                }
-                if (retweet && tweetValue.parent) {
-                    // Retweet
-                    let originalTweet = tweetValue.parent;
-                    tweetFormattedHtml = 
-                        "<div class=\"media\"><div class=\"media-body\">"
-                        + "<span class='grey-color'>"
-                        + "Retweeted via "
-                        + "<span class='dark-blue-color'>"
-                        + tweetUser.username
-                        + "</span>"
-                        + " on " + dateDisplay + "</span><br/>"
-                        + " "
-                        + originalTweet.content + "<br/>"
-                        + " via <a href='"
-                        + originalTweet.user.url
-                        + "'>" + originalTweet.user.username + "</a> | "
-                        + originalTweet.date_display + " | "
-                        + "<a href='/tweet/" 
-                        + originalTweet.id + "'>View</a> | "
-                        + "<a class='retweetButton' href='/tweet/" + tweetValue.id
-                        + "/retweet/'>Retweet</a>"
-                        + " | <a href='#' class='tweet-like' data-id='"
-                        + tweetValue.id 
-                        + "'>" + verb + " (" + tweetValue.likes + ")</a>"
+                } else if (tweetValue.did_like) {
+                    verb = "Unlike";
+                };
+                let retweet;
+                let isReply = tweetValue.reply;
+                if (tweetValue.parent && !isReply) {
+                    tweetValue = tweetValue.parent;
+                    retweet = 
+                        "<span class='grey-color'>Retweet via @"
+                        + tweetValue.user.username + " on "
+                        + tweetValue.date_display + "</span><br/>";
+                } else if (tweetValue.parent && isReply) {
+                    // tweetValue = tweetValue.parent;
+                    retweet = "<span class='grey-color'>Reply to @" 
+                        + tweetValue.parent.user.username
+                        + "</span><br/>";
+                };
+                tweetContent = tweetValue.content + "<br/> via <a href='"
+                    + tweetValue.user.url + "'>"
+                    + tweetValue.user.username + "</a> | "
+                    + tweetValue.date_display + " | "
+                    + "<a href='/tweet/" + 
+                    + tweetValue.id + "'>View</a> | "
+                    + "<a class='retweetButton' href='/tweet/"
+                    + tweetValue.id
+                    + "/retweet/'>Retweet</a> | "
+                    + "<a href='#' class='tweet-like' data-id='"
+                    + tweetValue.id + "'>" + verb
+                    + " (" + tweetValue.likes + ")</a>"
+                    + " | <a href='#' class='tweet-reply' data-user='" 
+                    + tweetValue.user.username
+                    + "' data-id='"
+                    + tweetValue.id
+                    + "'>Reply</a>";
+
+                if (retweet) {
+                    container = "<div class=\"media\"><div class=\"meida-body\">"
+                        + retweet + tweetContent
                         + "</div></div><hr/>";
                 } else {
-                    // Fresh new tweet
-                    tweetFormattedHtml = 
-                        "<div class=\"media\"><div class=\"media-body\">" 
-                        + tweetContent + "<br/> via "
-                        + "<a href='"
-                        + tweetUser.url
-                        + "'>"
-                        + tweetUser.username + "</a> | " 
-                        + dateDisplay + " | " 
-                        + "<a href='/tweet/" + tweetValue.id + "'>View</a> | "
-                        + "<a class='retweetButton' href='/tweet/" + tweetValue.id
-                        + "/retweet/'>Retweet</a>"
-                        + " | <a href='#' class='tweet-like' data-id='"
-                        + tweetValue.id
-                        + "'>"+ verb + " (" + tweetValue.likes + ")</a>"
+                    container = "<div class=\"media\"><div class=\"media-body\">"
+                        + tweetContent
                         + "</div></div><hr/>";
                 }
+                return container;
+            }
+
+
+            function attachTweet(tweetValue, prepend, retweet) {
+                let tweetFormattedHtml;
+
+                tweetFormattedHtml = formatTweet(tweetValue);
+
                 if (prepend === true) {
                     initialContainer.prepend(tweetFormattedHtml);
                 } else {
@@ -224,8 +245,8 @@
                         // $("#tweet-form").find("input[type=text], textarea").val("");
                         // $("#tweet-form")[0].reset();
                         
-                        if ($("#tweet-form").val()) {
-                            $("#tweet-form")[0].reset();
+                        if ($(".tweet-form").val()) {
+                            $(".tweet-form")[0].reset();
                         }
                         
                         // $("#tweetCharsLeft").text(charsStart);
@@ -250,8 +271,8 @@
 
             var charsStart = 140;
             var charsCurrent = 0;
-            $("#tweet-form").append("<span id='tweetCharsLeft'>" + charsStart + "</span>");
-            $("#tweet-form textarea").keyup(function(event) {
+            $(".tweet-form").append("<span id='tweetCharsLeft'>" + charsStart + "</span>");
+            $(".tweet-form textarea").keyup(function(event) {
                 // this can monitor the typying in real-time
                 // console.log(event.key, event.timeStamp);
                 var tweetValue = $(this).val();
@@ -270,7 +291,7 @@
                 };
             });
 
-            $('#tweet-form').submit(function (event) {
+            $('.tweet-form').submit(function (event) {
                 event.preventDefault();
                 var this_ = $(this);
                 var formData = this_.serialize();
@@ -285,6 +306,7 @@
                             $("#tweetCharsLeft").text(charsStart);
                             attachTweet(data, true);
                             updateHashLinks();
+                            $("#replyModal").modal("hide");
                         },
                         error: function(data) {
                             console.log('error');
